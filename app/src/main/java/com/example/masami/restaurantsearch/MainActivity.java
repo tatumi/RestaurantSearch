@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,17 +20,17 @@ import android.widget.Spinner;
 
 
 
-public class MainActivity extends AppCompatActivity implements LocationListener {
+public class MainActivity extends AppCompatActivity implements LocationListener,GurunaviAPI.ResponseListener,SearchFragment.SearchFragmentListener {
 
 
     private LocationManager mLocationManager;
-
+    private GurunaviAPI mGurunaviAPI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mGurunaviAPI = new GurunaviAPI(this);
         if(savedInstanceState == null){//初回起動 or 前回の記録なし
             //フラグメントをアクティビティに貼り付け
             FragmentManager fragmentManager = getSupportFragmentManager();
@@ -81,5 +82,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+
+    @Override
+    public void onResponseDataReceived(String responseData) {
+        Log.d("TAG",responseData);
+    }
+
+    @Override
+    public void onSearchGo(String spinnerValue) {
+        mGurunaviAPI.execute("34.717329","135.765969",spinnerValue);
     }
 }

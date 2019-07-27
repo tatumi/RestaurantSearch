@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">RestaurantSearch</string>
     <string-array name="item_label">
+        <item>選択</item>
         <item>300m</item>
         <item>500m</item>
         <item>1000m</item>
