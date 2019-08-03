@@ -15,66 +15,88 @@ import java.util.Locale;
 
 //ぐるなびAPIとやり取りするクラス
 public class GurunaviAPI extends AsyncTask<String,Void,String>{
+    //将来条件が増えたら
     final byte USE_GPS = 1<<0;
     final byte USE_SORT = 1<<1;
 
+    //タイムアウトとか
     final int CONNECTION_TIMEOUT = 3000;
     final int READ_TIMEOUT = 3000;
-    private String time ;
-    final private String KEY = "2e585a9e680e1e6bf8d3857abdb3c0c1";
-    final private String urlstr = "https://api.gnavi.co.jp/RestSearchAPI/v3/";
-   public interface ResponseListener{
+
+    //アクセスに必要な情報
+    final private String KEY = "a353b5c33a17db00f464d89dbc5621a9";      //アクセスキー
+    final private String urlstr = "https://api.gnavi.co.jp/RestSearchAPI/v3/";      //URL
+
+
+    //インタフェース
+    //APIの返事を受け取ったら呼ばれる
+    public interface ResponseListener{
        void onResponseDataReceived(String responseData);
-   }
+    }
 
-   private ResponseListener mListener;
+    //リスナーを保存しておく変数
+    private ResponseListener mListener;
 
-   public  GurunaviAPI(ResponseListener listener){
-       super();
-       if(listener == null){
-           listener = new ResponseListener() {
-               @Override
-               public void onResponseDataReceived(String responseData) {
+    //コンストラクタ
+    GurunaviAPI(ResponseListener listener){
+        super();
+        if(listener == null){
+            listener = new ResponseListener() {
+                @Override
+                public void onResponseDataReceived(String responseData) {
 
-               }
-           };
-       }
+                }
+            };
+        }
        mListener = listener;
-   }
+    }
 
-   public void searchGPS(String lati, String longi, String range){
-        this.execute(lati,longi,range);
-   }
+    //GPSで検索
+    public void searchGPS(String lati, String longi, String range, String page){
+        this.execute(lati,longi,range,page);
+    }
 
+    //ぐるなびAPIをたたく
     @Override
     protected String doInBackground(String... param) {
-       String result = "";
-       URL url;
+        String result = "";
+        URL url;
         HttpURLConnection connection = null;
+
         try {
+            //クエリの設定
             Uri.Builder builder = new Uri.Builder();
             builder.appendQueryParameter("keyid",KEY);
+            //緯度経度
             builder.appendQueryParameter("latitude",param[0]);
             builder.appendQueryParameter("longitude",param[1]);
+            //範囲
             builder.appendQueryParameter("range",param[2]);
+            builder.appendQueryParameter("offset_page",param[3]);
 
+            //URLにクエリを追加
             url = new URL(urlstr + builder.toString());
 
+            //コネクションの設定
             connection = (HttpURLConnection) url.openConnection();
 
+            //タイムアウト
             connection.setConnectTimeout(CONNECTION_TIMEOUT);
             connection.setReadTimeout(READ_TIMEOUT);
+
+            //必要なさそうなのでコメントアウト
          //   connection.addRequestProperty("User-Agent","Android");
          //   connection.addRequestProperty("Accept-Language", Locale.getDefault().toString());
-            connection.setRequestMethod("GET");
+
          //   connection.setDoOutput(false);
          //   connection.setDoOutput(true);
-            URL tmp = connection.getURL();
-            connection.connect();
 
+            connection.setRequestMethod("GET");
+            connection.connect();   //リクエスト送信
 
+            //ステータスコード取得
             int statusCode = connection.getResponseCode();
-            if(statusCode == HttpURLConnection.HTTP_OK){    //接続できたか確認
+            if(statusCode == HttpURLConnection.HTTP_OK){    //接続成功していれば
 
                 //読み取る際の文字コードを取得
                 String encoding = connection.getContentEncoding();
@@ -88,7 +110,7 @@ public class GurunaviAPI extends AsyncTask<String,Void,String>{
                 final InputStreamReader inReader = new InputStreamReader(in,encoding);
                 final BufferedReader bufferedReader = new BufferedReader(inReader);
 
-                StringBuffer res = new StringBuffer();
+                StringBuilder res = new StringBuilder();
                 //読み出しに使う変数
                 String line;
 

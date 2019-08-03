@@ -1,36 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="16dp">
 
-    <ImageView
-        android:id="@+id/icon"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="16dp"
-        android:src="@mipmap/ic_launcher"/>
+        android:textSize="24sp" />
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/name"
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="400px"
+            android:layout_height="300px"
+            android:layout_marginRight="16dp"
+            android:src="@mipmap/ic_launcher"
+            app:srcCompat="@drawable/noimage" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Azunobu"
-            android:textSize="17sp"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/comment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="僕の夏休みは9月から始まる予定です。"
-            android:textSize="15sp"/>
+            <TextView
+                android:id="@+id/accessTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/loading"
+                android:textSize="18sp" />
+        </LinearLayout>
 
     </LinearLayout>
 

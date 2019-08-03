@@ -12,5 +12,11 @@
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="0dp" />
 
+    <TextView
+        android:text="@string/loading"
+        android:id="@+id/emptyView"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </RelativeLayout>
