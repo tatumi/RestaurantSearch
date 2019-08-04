@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">RestaurantSearch</string>
+    <string name="search_go">周辺のお店を検索</string>
     <string name="loading">読み込み中・・・</string>
     <string-array name="item_label">
-        <item>選択</item>
         <item>300m</item>
         <item>500m</item>
         <item>1000m</item>
@@ -14,4 +14,9 @@
     <string name="phone">電話番号</string>
     <string name="opentime">営業時間</string>
     <string name="nodataAccess">アクセス情報なし</string>
+    <string name="URL">URL</string>
+    <string name="pagenum2">件を表示中</string>
+    <string name="pageAnnounce">%d件中 %d～%d件を表示中</string>
+    <string name="app_name_jp">レストラン検索アプリ</string>
+    <string name="description">現在地周辺のレストランを検索できます。</string>
 </resources>

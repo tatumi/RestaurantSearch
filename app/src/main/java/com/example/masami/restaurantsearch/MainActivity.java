@@ -24,9 +24,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
+        setContentView(R.layout.activity_main);
         if(savedInstanceState == null){//初回起動 or 前回の記録なし
+
             //フラグメントをアクティビティに貼り付け
             FragmentManager fragmentManager = getSupportFragmentManager();
             SearchFragment searchFragment = new SearchFragment();

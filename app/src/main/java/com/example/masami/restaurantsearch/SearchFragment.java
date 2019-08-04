@@ -1,6 +1,8 @@
 package com.example.masami.restaurantsearch;
 
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
 
 public class SearchFragment extends Fragment{
@@ -20,7 +23,7 @@ public class SearchFragment extends Fragment{
     private Spinner mRangeSpinner;
     private Button mSearchButton;
     private String mSpinnerValue;
-
+    private final String GURUNAVI_URL = "https://api.gnavi.co.jp/api/scope/";
 
 
 
@@ -68,6 +71,9 @@ public class SearchFragment extends Fragment{
             }
         });
 
+        //500mを初期状態に
+        mRangeSpinner.setSelection(1);
+
         //ボタンにイベントリスナー登録
         mSearchButton = view.findViewById(R.id.searchButton);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +86,7 @@ public class SearchFragment extends Fragment{
 
                 //フォームの内容を検索結果画面に転送
                 Bundle bundle = new Bundle();
-                if(mSpinnerValue.equals("0"))mSpinnerValue="2";
+                if(mSpinnerValue.equals("0"))mSpinnerValue = "2";
                 bundle.putString("Range",mSpinnerValue);
                 resultFragment.setArguments(bundle);
 
@@ -97,7 +103,19 @@ public class SearchFragment extends Fragment{
             }
         });
 
+        (view.findViewById(R.id.gurunaviImage)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openBrowser(GURUNAVI_URL);
+            }
+        });
 
+
+    }
+    void openBrowser(String urlstr){
+        Uri uri = Uri.parse(urlstr);
+        Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+        startActivity(intent);
     }
 
 

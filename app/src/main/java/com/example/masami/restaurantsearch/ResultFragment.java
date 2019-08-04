@@ -1,42 +1,30 @@
 package com.example.masami.restaurantsearch;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Debug;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.util.JsonReader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.Format;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class ResultFragment extends Fragment implements GurunaviAPI.ResponseListener{
@@ -46,51 +34,67 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
     private String mLongitude;
     private JSONObject mJsonObject;
     private ListView mListView;
+    private View mHeader;
     private View mFooter;
     private int mPageCount=1;
+    private int mTotalHit;
+    private int mOffset;
     private RestaurantAdapter mAdapter;
     private ResultFragment mResultFragment;
+
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        return  inflater.inflate(R.layout.result_fragment,container,false);
 
+    }
 
+    //GPSを使った検索を開始
+    public void searchGo(String range,String page){
+        GurunaviAPI gurunaviAPI = new GurunaviAPI(this);
+
+        mLatitude = "35.657575";
+        mLongitude = "139.702234";
+        //    mLatitude = ((MainActivity)getActivity()).getLatitude();
+        //    mLongitude = ((MainActivity)getActivity()).getLongitude();
+
+        gurunaviAPI.searchGPS(mLatitude, mLongitude, range, page);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mResultFragment = this;
         if(savedInstanceState==null) {
-            mResultFragment = this;
+            Log.d("DEBUG","ONCREATE");
+
             Bundle bundle = getArguments();
             if(bundle != null) {
 
                 mRange = bundle.getString("Range");
                 mPageCount = bundle.getInt("PageCount");
             }
-            if(mPageCount==0)mPageCount=1;
-            mLatitude = "35.657575";
-            mLongitude = "139.702234";
-            //    mLatitude = ((MainActivity)getActivity()).getLatitude();
-            //    mLongitude = ((MainActivity)getActivity()).getLongitude();
 
-            searchGo(mLatitude, mLongitude, mRange, Integer.toString(mPageCount));
+            if(mPageCount==0)mPageCount=1;
+
+        }else {
+            mRange = savedInstanceState.getString("Range");
+            mPageCount = savedInstanceState.getInt("PageCount");
+
 
         }
-        return  inflater.inflate(R.layout.result_fragment,container,false);
 
-    }
+        searchGo(mRange, Integer.toString(mPageCount));
 
-    //GPSを使った検索を開始
-    public void searchGo(String latitude, String longitude, String range,String page){
-        GurunaviAPI gurunaviAPI = new GurunaviAPI(this);
-        gurunaviAPI.searchGPS(latitude, longitude, range, page);
-    }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
         mListView = view.findViewById(R.id.restaurantList);
         //アダプターをリストビューにセット
         mListView.setAdapter(mAdapter);
         mListView.setEmptyView(getView().findViewById(R.id.emptyView));     //読み込み画面登録
+        mListView.addHeaderView(getHeader());
         mListView.addFooterView(getFooter());
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {        //リスナー登録
@@ -104,7 +108,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 Bundle thisBundle = new Bundle();
                 try {
                     //選択された店のデータを詳細画面に転送
-                    detailBundle.putString("rest",mJsonObject.getJSONArray("rest").getJSONObject(position).toString());
+                    detailBundle.putString("rest",mJsonObject.getJSONArray("rest").getJSONObject(position-1).toString());
                     detailBundle.putInt("posi",position);
                     thisBundle.putInt("PageCount",mPageCount);
                     thisBundle.putString("Range",mRange);
@@ -132,17 +136,63 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
 
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("Range",mRange);
+        outState.putInt("PageCount",mPageCount);
+    }
+
+    //リストビューのフッターを返す
+    private View getHeader() {
+        if (mHeader == null) {
+            mHeader = getLayoutInflater().inflate(R.layout.listview_header, null);
+
+        }
+        return mHeader;
+    }
+
     //リストビューのフッターを返す
     private View getFooter() {
         if (mFooter == null) {
             mFooter = getLayoutInflater().inflate(R.layout.listview_footer, null);
+
+            //次のページへ進むボタンの挙動
             mFooter.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     mPageCount++;
-                    searchGo(mLatitude,mLongitude,mRange,Integer.toString(mPageCount));
+                    searchGo(mRange,Integer.toString(mPageCount));
                 }
             });
+
+            //前のページへ戻るボタンの挙動
+            mFooter.findViewById(R.id.backButton).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPageCount--;
+                    searchGo(mRange,Integer.toString(mPageCount));
+                }
+            });
+
+
+
+            ((Spinner)mFooter.findViewById(R.id.pageIndex)).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    if(position != mPageCount-mOffset-1) {
+                        mPageCount = position+mOffset;
+                        searchGo(mRange, Integer.toString(position + mOffset));
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+
 
         }
         return mFooter;
@@ -157,9 +207,10 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
         try {
             //JSONObjectで情報を取得
             mJsonObject = new JSONObject(responseData);
-            //ヒットした店数
+            //今回ヒットした店数
             int pageNum = mJsonObject.getInt("hit_per_page");
-
+            //総ヒット件数
+            mTotalHit = mJsonObject.getInt("total_hit_count");
             for (int i = 0; i < pageNum; i++) {
                 //Restaurantインスタンスを作成
                 Restaurant restaurant = new Restaurant();
@@ -172,10 +223,70 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
             e.printStackTrace();
         }
 
-
-            //自作アダプターRestaurantAdapterのインスタンス作成
+        //RestaurantAdapterのインスタンス作成
         mAdapter = new RestaurantAdapter(this.getContext(), 0,restaurants );
         mListView.setAdapter(mAdapter);
+
+
+        //ヘッダに文字列を設定
+        ((TextView)mHeader.findViewById(R.id.pageAnnounce)).setText(
+                String.format(getResources().getString(R.string.pageAnnounce),
+                        mTotalHit,(10*mPageCount-9),10*mPageCount));
+
+
+        int totalpage = (int)Math.ceil(mTotalHit/10);
+
+        if(totalpage <= mPageCount) {//次のページが存在するかどうか
+            //存在しない場合，進むボタンを無効化
+            mFooter.findViewById(R.id.nextButton).setEnabled(false);
+        }else{
+            //存在する場合，進むボタンを有効化
+            mFooter.findViewById(R.id.nextButton).setEnabled(true);
+        }
+
+        if(mPageCount<2) {//前のページが存在するかどうか
+            //存在しない場合，戻るボタンを無効化
+            mFooter.findViewById(R.id.backButton).setEnabled(false);
+        }else{
+            //存在する場合，戻るボタンを有効化
+            mFooter.findViewById(R.id.backButton).setEnabled(true);
+        }
+
+
+
+
+        if(5<mPageCount){
+            mOffset = mPageCount-5;
+
+            if((totalpage-mPageCount)<5)mOffset -= totalpage-mPageCount;
+        }
+
+
+
+
+
+        ArrayList<String> item = new ArrayList<>();
+
+        for(int i = 1;i<=10;i++){
+            if((i+mOffset)==mPageCount){
+                item.add(Integer.toString(i+mOffset)+"(現在のページ)");
+            }else {
+                item.add(Integer.toString(i+mOffset));
+            }
+            if(totalpage<=(i+mOffset)){
+                break;
+            }
+        }
+
+        //アダプター生成
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
+                getActivity(),
+                android.R.layout.simple_spinner_item,
+                item);
+
+        ((Spinner)mFooter.findViewById(R.id.pageIndex)).setAdapter(spinnerAdapter);
+        ((Spinner)mFooter.findViewById(R.id.pageIndex)).setSelection(mPageCount-mOffset-1);
+
 
 
     }
