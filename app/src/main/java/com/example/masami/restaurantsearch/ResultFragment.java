@@ -25,10 +25,13 @@ import org.json.JSONObject;
 
 import java.text.Format;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ResultFragment extends Fragment implements GurunaviAPI.ResponseListener{
 
+    private final String ACCESSKEY = "a353b5c33a17db00f464d89dbc5621a9";
+    private final String SEARCHURL = "https://api.gnavi.co.jp/RestSearchAPI/v3/";
     private String mRange;
     private String mLatitude;
     private String mLongitude;
@@ -53,7 +56,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
     }
 
     //GPSを使った検索を開始
-    public void searchGo(String range,String page){
+    public void searchGo(){
         GurunaviAPI gurunaviAPI = new GurunaviAPI(this);
 
         mLatitude = "35.657575";
@@ -61,7 +64,16 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
         //    mLatitude = ((MainActivity)getActivity()).getLatitude();
         //    mLongitude = ((MainActivity)getActivity()).getLongitude();
 
-        gurunaviAPI.searchGPS(mLatitude, mLongitude, range, page);
+        HashMap<String,String> map = new HashMap<>();
+        map.put("url",SEARCHURL);
+        map.put("keyid",ACCESSKEY);
+        map.put("latitude",mLatitude);
+        map.put("longitude",mLongitude);
+        map.put("range",mRange);
+        map.put("offset_page",Integer.toString(mPageCount));
+
+
+        gurunaviAPI.search(map);
     }
 
     @Override
@@ -87,7 +99,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
 
         }
 
-        searchGo(mRange, Integer.toString(mPageCount));
+        searchGo();
 
 
         mListView = view.findViewById(R.id.restaurantList);
@@ -101,33 +113,35 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                //詳細画面へ画面遷移
-                //遷移先のインスタンス生成
-                DetailFragment detailFragment = new DetailFragment();
-                Bundle detailBundle = new Bundle();
-                Bundle thisBundle = new Bundle();
-                try {
-                    //選択された店のデータを詳細画面に転送
-                    detailBundle.putString("rest",mJsonObject.getJSONArray("rest").getJSONObject(position-1).toString());
-                    detailBundle.putInt("posi",position);
-                    thisBundle.putInt("PageCount",mPageCount);
-                    thisBundle.putString("Range",mRange);
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if(position != 0) {
+                    //詳細画面へ画面遷移
+                    //遷移先のインスタンス生成
+                    DetailFragment detailFragment = new DetailFragment();
+                    Bundle detailBundle = new Bundle();
+                    Bundle thisBundle = new Bundle();
+                    try {
+                        //選択された店のデータを詳細画面に転送
+                        detailBundle.putString("rest", mJsonObject.getJSONArray("rest").getJSONObject(position - 1).toString());
+                        detailBundle.putInt("posi", position);
+                        thisBundle.putInt("PageCount", mPageCount);
+                        thisBundle.putString("Range", mRange);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    detailFragment.setArguments(detailBundle);
+                    mResultFragment.setArguments(thisBundle);
+
+
+                    //画面遷移
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    FragmentTransaction transaction = fragmentManager.beginTransaction();
+                    transaction.replace(R.id.container, detailFragment);
+
+                    //戻るボタン挙動
+                    transaction.addToBackStack(null);
+                    transaction.commit();
                 }
-
-                detailFragment.setArguments(detailBundle);
-                mResultFragment.setArguments(thisBundle);
-
-
-                //画面遷移
-                FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.replace(R.id.container,detailFragment);
-
-                //戻るボタン挙動
-                transaction.addToBackStack(null);
-                transaction.commit();
             }
         });
 
@@ -162,7 +176,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 @Override
                 public void onClick(View v) {
                     mPageCount++;
-                    searchGo(mRange,Integer.toString(mPageCount));
+                    searchGo();
                 }
             });
 
@@ -171,7 +185,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 @Override
                 public void onClick(View v) {
                     mPageCount--;
-                    searchGo(mRange,Integer.toString(mPageCount));
+                    searchGo();
                 }
             });
 
@@ -182,7 +196,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                     if(position != mPageCount-mOffset-1) {
                         mPageCount = position+mOffset;
-                        searchGo(mRange, Integer.toString(position + mOffset));
+                        searchGo();
                     }
                 }
 

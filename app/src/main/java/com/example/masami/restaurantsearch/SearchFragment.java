@@ -15,15 +15,26 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Spinner;
 
-public class SearchFragment extends Fragment{
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class SearchFragment extends Fragment implements GurunaviAPI.ResponseListener{
 
     private Spinner mRangeSpinner;
     private Button mSearchButton;
-    private String mSpinnerValue;
+    private Spinner mCategorySpinner;
+    private String mRangeValue;
+    private int mCategoryValue;
+    private ArrayList<String> mCategoryCodes;
     private final String GURUNAVI_URL = "https://api.gnavi.co.jp/api/scope/";
+    private final String CATEGORY_URL = "https://api.gnavi.co.jp/master/CategoryLargeSearchAPI/v3/";
+    private final String ACCESSKEY = "a353b5c33a17db00f464d89dbc5621a9";
 
 
 
@@ -40,14 +51,19 @@ public class SearchFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
         //スピナーのID取得
-        mRangeSpinner =  view.findViewById(R.id.spinner);
+        mRangeSpinner =  view.findViewById(R.id.rangeSpinner);
+        mCategorySpinner = view.findViewById(R.id.categorySpinner);
+
+        getCategory();
 
         //スピナーに表示するラベル取得
         String[] rangeLabels = getResources().getStringArray(R.array.item_label);
 
         //アダプター生成
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
                 getActivity(),
                 android.R.layout.simple_spinner_item,
                 rangeLabels
@@ -62,7 +78,7 @@ public class SearchFragment extends Fragment{
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //APIに合わせた値に変換
-                mSpinnerValue = Integer.toString(position);
+                mRangeValue = Integer.toString(position+1);
 
             }
 
@@ -86,8 +102,8 @@ public class SearchFragment extends Fragment{
 
                 //フォームの内容を検索結果画面に転送
                 Bundle bundle = new Bundle();
-                if(mSpinnerValue.equals("0"))mSpinnerValue = "2";
-                bundle.putString("Range",mSpinnerValue);
+                bundle.putString("Range", mRangeValue);
+                bundle.putString("category",mCategoryCodes.get(mCategoryValue));
                 resultFragment.setArguments(bundle);
 
                 //画面遷移
@@ -112,6 +128,19 @@ public class SearchFragment extends Fragment{
 
 
     }
+
+    void getCategory(){
+        GurunaviAPI gurunaviAPI = new GurunaviAPI(this);
+
+        HashMap<String,String> map = new HashMap<>();
+        map.put("url",CATEGORY_URL);
+        map.put("keyid",ACCESSKEY);
+        map.put("lang","ja");
+
+        gurunaviAPI.search(map);
+
+    }
+
     void openBrowser(String urlstr){
         Uri uri = Uri.parse(urlstr);
         Intent intent = new Intent(Intent.ACTION_VIEW,uri);
@@ -119,4 +148,36 @@ public class SearchFragment extends Fragment{
     }
 
 
+    @Override
+    public void onResponseDataReceived(String responseData) {
+
+        ArrayList<String> categories = new ArrayList<>();
+        mCategoryCodes = new ArrayList<>();
+
+        categories.add("カテゴリ:未選択");
+        mCategoryCodes.add("");
+
+        try {
+
+            JSONArray categoryArray = (new JSONObject(responseData)).getJSONArray("category_l");
+            for(int i = 0; i<categoryArray.length();i++){
+                categories.add(categoryArray.getJSONObject(i).getString("category_l_name"));
+                mCategoryCodes.add(categoryArray.getJSONObject(i).getString("category_l_code"));
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ArrayAdapter adapter = new ArrayAdapter<>(
+                getActivity(),
+                android.R.layout.simple_spinner_item,
+                categories
+        );
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mCategorySpinner.setAdapter(adapter);
+
+    }
 }

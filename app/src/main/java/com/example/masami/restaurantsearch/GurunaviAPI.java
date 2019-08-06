@@ -11,31 +11,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 //ぐるなびAPIとやり取りするクラス
-public class GurunaviAPI extends AsyncTask<String,Void,String>{
-    //将来条件が増えたら
-    final byte USE_GPS = 1<<0;
-    final byte USE_SORT = 1<<1;
+public class GurunaviAPI extends AsyncTask<HashMap<String,String>,Void,String>{
 
     //タイムアウトとか
     final int CONNECTION_TIMEOUT = 3000;
     final int READ_TIMEOUT = 3000;
 
-    //アクセスに必要な情報
-    final private String KEY = "a353b5c33a17db00f464d89dbc5621a9";      //アクセスキー
-    final private String urlstr = "https://api.gnavi.co.jp/RestSearchAPI/v3/";      //URL
-
-
+    //リスナーを保存しておく変数
+    private ResponseListener mListener;
     //インタフェース
     //APIの返事を受け取ったら呼ばれる
     public interface ResponseListener{
        void onResponseDataReceived(String responseData);
     }
 
-    //リスナーを保存しておく変数
-    private ResponseListener mListener;
+
 
     //コンストラクタ
     GurunaviAPI(ResponseListener listener){
@@ -48,17 +43,18 @@ public class GurunaviAPI extends AsyncTask<String,Void,String>{
                 }
             };
         }
-       mListener = listener;
+        mListener = listener;
     }
 
     //GPSで検索
-    public void searchGPS(String lati, String longi, String range, String page){
-        this.execute(lati,longi,range,page);
+    public void search(HashMap map){
+        this.execute(map);
     }
 
     //ぐるなびAPIをたたく
+    @SafeVarargs
     @Override
-    protected String doInBackground(String... param) {
+    protected final String doInBackground(HashMap<String, String>... param) {
         String result = "";
         URL url;
         HttpURLConnection connection = null;
@@ -66,13 +62,15 @@ public class GurunaviAPI extends AsyncTask<String,Void,String>{
         try {
             //クエリの設定
             Uri.Builder builder = new Uri.Builder();
-            builder.appendQueryParameter("keyid",KEY);
-            //緯度経度
-            builder.appendQueryParameter("latitude",param[0]);
-            builder.appendQueryParameter("longitude",param[1]);
-            //範囲
-            builder.appendQueryParameter("range",param[2]);
-            builder.appendQueryParameter("offset_page",param[3]);
+
+
+            String urlstr = param[0].get("url");
+            param[0].remove("url");
+
+            for(Map.Entry<String,String> entry : param[0].entrySet()){
+                builder.appendQueryParameter(entry.getKey(),entry.getValue());
+            }
+
 
             //URLにクエリを追加
             url = new URL(urlstr + builder.toString());

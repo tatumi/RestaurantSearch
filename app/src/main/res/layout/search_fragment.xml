@@ -13,6 +13,7 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:padding="15dp"
         android:text="@string/app_name_jp"
         android:textSize="24sp" />
@@ -21,95 +22,67 @@
         android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:gravity="center"
+        android:padding="5dp"
         android:text="@string/description"
-        android:textSize="18sp" />
+        android:textSize="15sp" />
 
     <Space
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
+        android:layout_height="15dp" />
 
-    <TableLayout
+    <TextView
+        android:id="@+id/rangeText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="検索範囲"
+        android:textSize="13sp" />
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <Spinner
+        android:id="@+id/rangeSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"/>
 
-            <TextView
-                android:id="@+id/rangeText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="検索範囲"
-                android:textAlignment="textEnd"
-                android:padding="10dp"
-                android:textSize="18sp" />
+    <TextView
+        android:id="@+id/freewordText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="フリーワード"
+        android:textSize="13sp" />
 
-            <Spinner
-                android:id="@+id/spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:background="@drawable/black_bottom"/>
-        </TableRow>
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="例)　イタリアン"
+        android:inputType="text"
+        android:paddingBottom="10dp"
+        android:paddingLeft="5dp"
+        android:singleLine="true" />
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+    <TextView
+        android:id="@+id/categoryText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="カテゴリ"
+        android:textSize="13sp" />
 
-            <TextView
-                android:id="@+id/freewordText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="フリーワード"
-                android:textAlignment="textEnd"
-                android:textSize="18sp" />
-
-            <EditText
-                android:id="@+id/editText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:ems="10"
-                android:inputType="textPersonName"
-                android:background="@drawable/black_bottom"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <TextView
-                android:id="@+id/categoryText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="カテゴリ"
-                android:textAlignment="textEnd"
-                android:textSize="18sp"
-                />
-
-            <Spinner
-                android:id="@+id/categorySpinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/black_bottom"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </TableLayout>
+    <Spinner
+        android:id="@+id/categorySpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"/>
 
     <Button
         android:id="@+id/searchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/search_go"
-        tools:layout_editor_absoluteX="148dp"
-        tools:layout_editor_absoluteY="117dp" />
+         />
 
     <Space
         android:layout_width="match_parent"
