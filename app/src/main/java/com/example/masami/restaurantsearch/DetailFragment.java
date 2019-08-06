@@ -20,7 +20,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class DetailFragment extends Fragment{
+public class DetailFragment extends Fragment implements ImageGetTask.OnImageResponseListener{
 
     private JSONObject mRestrant;
     private String mBrowseURI;
@@ -61,7 +61,7 @@ public class DetailFragment extends Fragment{
                     ((ImageView) view.findViewById(R.id.shopImage)).setImageBitmap(shop);
                 } else {
                     //URLから画像を取得する
-                    ImageGetTask imageGetTask = new ImageGetTask((ImageView) view.findViewById(R.id.shopImage));
+                    ImageGetTask imageGetTask = new ImageGetTask(this);
                     imageGetTask.execute(mRestrant.getJSONObject("image_url").getString("shop_image1"));
                 }
 
@@ -123,5 +123,10 @@ public class DetailFragment extends Fragment{
         startActivity(intent);
 
 
+    }
+
+    @Override
+    public void onImageDataReceived(Bitmap[] bitmap) {
+        ((ImageView) getView().findViewById(R.id.shopImage)).setImageBitmap(bitmap[0]);
     }
 }

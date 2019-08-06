@@ -10,26 +10,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-public class ImageGetTask extends AsyncTask<String,Void,Bitmap> {
-    ImageView mImageView;
+public class ImageGetTask extends AsyncTask<String,Void,Bitmap[]> {
 
-    public ImageGetTask(ImageView imageview){
-        mImageView = imageview;
+    OnImageResponseListener mListener;
+
+    interface OnImageResponseListener{
+        void onImageDataReceived(Bitmap[] bitmap);
+    }
+
+    ImageGetTask(OnImageResponseListener listener){
+        super();
+        mListener = listener;
     }
 
     @Override
-    protected Bitmap doInBackground(String... urls) {
+    protected Bitmap[] doInBackground(String... urls) {
 
 
-
+        Bitmap[] result = new Bitmap[urls.length];
         try {
-            URL imageUrl = new URL(urls[0]);
-            InputStream imageIs;
-            imageIs = imageUrl.openStream();
-
-            return BitmapFactory.decodeStream(imageIs);
-
-
+            for(int i=0;i<urls.length;i++) {
+                if(urls[i].equals("")){
+                    result[i] = null;
+                    continue;
+                }
+                URL imageUrl = new URL(urls[i]);
+                InputStream imageIs = imageUrl.openStream();
+                result[i] = Bitmap.createScaledBitmap(
+                        BitmapFactory.decodeStream(imageIs),
+                        800,600,false);
+            }
+            return result;
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -38,9 +49,8 @@ public class ImageGetTask extends AsyncTask<String,Void,Bitmap> {
     }
 
     @Override
-    protected void onPostExecute(Bitmap bitmap) {
+    protected void onPostExecute(Bitmap[] bitmap) {
         super.onPostExecute(bitmap);
-        bitmap  = Bitmap.createScaledBitmap(bitmap,800,600,false);
-        mImageView.setImageBitmap(bitmap);
+        mListener.onImageDataReceived(bitmap);
     }
 }

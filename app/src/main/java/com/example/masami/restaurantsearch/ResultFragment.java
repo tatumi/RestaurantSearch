@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ResultFragment extends Fragment implements GurunaviAPI.ResponseListener{
+public class ResultFragment extends Fragment implements GurunaviAPI.ResponseListener,ImageGetTask.OnImageResponseListener{
     /*-------定数-------*/
     private final String ACCESSKEY = "a353b5c33a17db00f464d89dbc5621a9";    //APIのアクセスキー
     private final String SEARCHURL = "https://api.gnavi.co.jp/RestSearchAPI/v3/";   //APIのURL
@@ -92,6 +92,8 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 mCategory = bundle.getString("Category");
                 mFreeWord = bundle.getString("FreeWord");
             }
+
+            if(mPageCount==0)mPageCount=1;
 
 
         }
@@ -254,8 +256,9 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
     @Override
     public void onResponseDataReceived(String responseData) {
         //アダプタ登録用のレストランリスト
-        ArrayList<Restaurant> restaurants = new ArrayList<>();
+        mRestaurants = new ArrayList<>();
         int pageNum = 0;
+        String[] imageURLs = new String[PAGENUM];
         try {
             //JSONObjectで情報を取得
             mJsonObject = new JSONObject(responseData);
@@ -271,15 +274,17 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 Restaurant restaurant = new Restaurant();
                 //レストラン情報各種をRestaurantのメンバに登録
                 restaurant.setAll(restArray.getJSONObject(i));
+                imageURLs[i] = restArray.getJSONObject(i).getJSONObject("image_url").getString("shop_image1");
                 //リストに追加
-                restaurants.add(restaurant);
+                mRestaurants.add(restaurant);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        //アダプターを登録
-        mListView.setAdapter(new RestaurantAdapter(this.getContext(), 0,restaurants ));
+
+        ImageGetTask imageGetTask = new ImageGetTask(this);
+        imageGetTask.execute(imageURLs);
 
 
         //ヘッダに文字列を設定
@@ -313,11 +318,8 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
             mOffset = mPageCount-5;
 
             if((totalpage-mPageCount)<5)mOffset -= totalpage-mPageCount;
+
         }
-
-
-
-
 
         ArrayList<String> item = new ArrayList<>();
 
@@ -338,6 +340,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 android.R.layout.simple_spinner_item,
                 item);
 
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         ((Spinner)mFooter.findViewById(R.id.pageIndex)).setAdapter(spinnerAdapter);
         ((Spinner)mFooter.findViewById(R.id.pageIndex)).setSelection(mPageCount-mOffset-1);
 
@@ -345,9 +348,14 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
 
     }
 
-
-
-
+    @Override
+    public void onImageDataReceived(Bitmap[] bitmap) {
+        for(int i=0;i<bitmap.length;i++){
+            if(bitmap[i] != null)
+            mRestaurants.get(i).setThumbnail1(bitmap[i]);
+        }
+        mListView.setAdapter(new RestaurantAdapter(this.getContext(), 0,mRestaurants ));
+    }
 
 
     public class RestaurantAdapter extends ArrayAdapter<Restaurant>{
@@ -379,9 +387,9 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                 shop = Bitmap.createScaledBitmap(shop,800,600,false);
                 ((ImageView)convertView.findViewById(R.id.thumbnail)).setImageBitmap(shop);
             }else {
-                //URLから画像を取得する
-                ImageGetTask imageGetTask = new ImageGetTask((ImageView) convertView.findViewById(R.id.thumbnail));
-                imageGetTask.execute(restaurant.getShopURL1());
+
+                ((ImageView) convertView.findViewById(R.id.thumbnail)).setImageBitmap(restaurant.getThumbnail1());
+
             }
                 ((TextView) convertView.findViewById(R.id.name))
                         .setText(restaurant.getName());
