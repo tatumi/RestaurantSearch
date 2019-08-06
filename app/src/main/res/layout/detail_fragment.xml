@@ -60,13 +60,6 @@
                     android:padding="10dp"
                     android:text="@string/loading" />
 
-                <TextView
-                    android:id="@+id/longPrTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/shopImage"
-                    android:textSize="18sp" />
-
             </RelativeLayout>
 
             <TableLayout

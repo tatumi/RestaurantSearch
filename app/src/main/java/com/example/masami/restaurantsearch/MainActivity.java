@@ -1,17 +1,20 @@
 package com.example.masami.restaurantsearch;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements LocationListener{
 
@@ -20,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private LocationManager mLocationManager;
     private String mBestProvider;
     private static final int REQUEST_LOCATION_PERMISSION = 101;
-
+    private boolean isLocating;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,11 +41,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             fragmentManager.executePendingTransactions(); // FragmentのTransaction処理の完了同期待ち
         }
 
-        //GPSを使う準備
-        initLocationManager();
+        checkPermission();
 
-        //測位開始
-        startLocation();
 
 
     }
@@ -63,23 +63,49 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             //許可がなければ許可を取得する
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+        }else {
+            initLocationManager();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 101) {
+            // 使用が許可された
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                initLocationManager();
+            }else{
+                Toast toast = Toast.makeText(this,"位置情報利用の許可をお願いします",Toast.LENGTH_SHORT);
+                toast.show();
+                this.finish();
+            }
         }
     }
 
 
     //測位開始する
     private void startLocation() {
-        checkPermission();
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            //許可がなければ許可を取得する
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+        }
+        isLocating=true;
         mLocationManager.requestLocationUpdates(mBestProvider, 60000,3,this);
     }
 
     //測位停止する
     private void stopLocation(){
+        if (isLocating)
         mLocationManager.removeUpdates(this);
     }
 
     //LocationManagerを使う準備をする
     private void initLocationManager() {
+
         mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         Criteria criteria = new Criteria();
@@ -94,6 +120,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         //最良のプロバイダーを選択
         mBestProvider = mLocationManager.getBestProvider(criteria, true);
+
+        startLocation();
     }
 
     //現在地が更新された

@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 
 import org.json.JSONArray;
@@ -90,6 +91,19 @@ public class SearchFragment extends Fragment implements GurunaviAPI.ResponseList
         //500mを初期状態に
         mRangeSpinner.setSelection(1);
 
+        mCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mCategoryValue = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
         //ボタンにイベントリスナー登録
         mSearchButton = view.findViewById(R.id.searchButton);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
@@ -103,7 +117,8 @@ public class SearchFragment extends Fragment implements GurunaviAPI.ResponseList
                 //フォームの内容を検索結果画面に転送
                 Bundle bundle = new Bundle();
                 bundle.putString("Range", mRangeValue);
-                bundle.putString("category",mCategoryCodes.get(mCategoryValue));
+                bundle.putString("Category",mCategoryCodes.get(mCategoryValue));
+                bundle.putString("FreeWord",((EditText)getView().findViewById(R.id.editText)).getText().toString());
                 resultFragment.setArguments(bundle);
 
                 //画面遷移

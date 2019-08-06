@@ -42,7 +42,6 @@ public class DetailFragment extends Fragment{
 
                 ((TextView) view.findViewById(R.id.nameTextView)).setText(mRestrant.getString("name"));
                 ((TextView) view.findViewById(R.id.prTextView)).setText(mRestrant.getJSONObject("pr").getString("pr_short"));
-                ((TextView) view.findViewById(R.id.longPrTextView)).setText(mRestrant.getJSONObject("pr").getString("pr_long"));
                 ((TextView) view.findViewById(R.id.categoryTextView)).setText(mRestrant.getString("category"));
 
                 mDestination = mRestrant.getString("address");

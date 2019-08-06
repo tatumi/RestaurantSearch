@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,21 +30,32 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ResultFragment extends Fragment implements GurunaviAPI.ResponseListener{
+    /*-------定数-------*/
+    private final String ACCESSKEY = "a353b5c33a17db00f464d89dbc5621a9";    //APIのアクセスキー
+    private final String SEARCHURL = "https://api.gnavi.co.jp/RestSearchAPI/v3/";   //APIのURL
+    private final int PAGENUM = 10;     //1ページに表示するレストランの数
+    /*------/定数-------*/
 
-    private final String ACCESSKEY = "a353b5c33a17db00f464d89dbc5621a9";
-    private final String SEARCHURL = "https://api.gnavi.co.jp/RestSearchAPI/v3/";
-    private String mRange;
-    private String mLatitude;
-    private String mLongitude;
-    private JSONObject mJsonObject;
-    private ListView mListView;
-    private View mHeader;
-    private View mFooter;
-    private int mPageCount=1;
-    private int mTotalHit;
-    private int mOffset;
-    private RestaurantAdapter mAdapter;
-    private ResultFragment mResultFragment;
+    /*------検索パラメータ-------*/
+    private String mRange;      //現在地からの検索範囲
+    private String mCategory;   //絞り込む大業態コード
+    private String mFreeWord;   //フリーワード検索機能のフリーワード
+    /*------/検索パラメータ-------*/
+
+    /*------View-------*/
+    private JSONObject mJsonObject;     //APIからのJSONを保存
+    private ListView mListView;         //レストラン情報を表示するListView
+    private View mHeader;               //ListViewのヘッダー．ページ番号などを表示
+    private View mFooter;               //ListViewのフッター．次ページへのボタンなどを配置
+    /*------/View-------*/
+
+    /*------ページ管理関係-------*/
+    private int mPageCount=1;           //表示中のページ番号
+    private int mTotalHit;              //検索条件でヒットした店舗の総数
+    private int mOffset;                //ページジャンプSpinnerの要素をずらすための変数
+    private ResultFragment mResultFragment;         //ページの状態保存用のインスタンス
+    private ArrayList<Restaurant> mRestaurants;     //店舗情報をまとめるためのインスタンスをまとめるリスト
+    /*------/ページ管理関係-------*/
 
 
 
@@ -51,65 +63,50 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        //フラグメントを貼り付け
         return  inflater.inflate(R.layout.result_fragment,container,false);
-
     }
 
-    //GPSを使った検索を開始
-    public void searchGo(){
-        GurunaviAPI gurunaviAPI = new GurunaviAPI(this);
 
-        mLatitude = "35.657575";
-        mLongitude = "139.702234";
-        //    mLatitude = ((MainActivity)getActivity()).getLatitude();
-        //    mLongitude = ((MainActivity)getActivity()).getLongitude();
-
-        HashMap<String,String> map = new HashMap<>();
-        map.put("url",SEARCHURL);
-        map.put("keyid",ACCESSKEY);
-        map.put("latitude",mLatitude);
-        map.put("longitude",mLongitude);
-        map.put("range",mRange);
-        map.put("offset_page",Integer.toString(mPageCount));
-
-
-        gurunaviAPI.search(map);
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        //ページの状態保存用のインスタンス
         mResultFragment = this;
-        if(savedInstanceState==null) {
-            Log.d("DEBUG","ONCREATE");
-
-            Bundle bundle = getArguments();
-            if(bundle != null) {
-
-                mRange = bundle.getString("Range");
-                mPageCount = bundle.getInt("PageCount");
-            }
-
-            if(mPageCount==0)mPageCount=1;
-
-        }else {
+        if(savedInstanceState!=null) {//savedInsの中身があれば
+            //各検索パラメータ復帰
             mRange = savedInstanceState.getString("Range");
             mPageCount = savedInstanceState.getInt("PageCount");
+            mCategory = savedInstanceState.getString("Category");
+            mFreeWord = savedInstanceState.getString("FreeWord");
+
+        }else {//中身がない場合
+
+            //bundle取得
+            Bundle bundle = getArguments();
+            if(bundle != null) {//bundleの中身があれば
+                //各検索パラメータ入力
+                mRange = bundle.getString("Range");
+                mPageCount = bundle.getInt("PageCount");
+                mCategory = bundle.getString("Category");
+                mFreeWord = bundle.getString("FreeWord");
+            }
 
 
         }
 
+        //検索を開始
         searchGo();
 
-
+        //ListViewのデータ以外を設定
         mListView = view.findViewById(R.id.restaurantList);
-        //アダプターをリストビューにセット
-        mListView.setAdapter(mAdapter);
         mListView.setEmptyView(getView().findViewById(R.id.emptyView));     //読み込み画面登録
-        mListView.addHeaderView(getHeader());
-        mListView.addFooterView(getFooter());
+        mListView.addHeaderView(getHeader());       //ヘッダー追加
+        mListView.addFooterView(getFooter());       //フッター追加
 
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {        //リスナー登録
+        //リスナー登録
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
@@ -117,18 +114,24 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                     //詳細画面へ画面遷移
                     //遷移先のインスタンス生成
                     DetailFragment detailFragment = new DetailFragment();
-                    Bundle detailBundle = new Bundle();
-                    Bundle thisBundle = new Bundle();
+
+                    Bundle detailBundle = new Bundle();     //遷移先のbundle
+                    Bundle thisBundle = new Bundle();       //このFragmentのbundle
                     try {
                         //選択された店のデータを詳細画面に転送
                         detailBundle.putString("rest", mJsonObject.getJSONArray("rest").getJSONObject(position - 1).toString());
-                        detailBundle.putInt("posi", position);
+
+                        //検索パラメータを保存
                         thisBundle.putInt("PageCount", mPageCount);
                         thisBundle.putString("Range", mRange);
+                        thisBundle.putString("FreeWord",mFreeWord);
+                        thisBundle.putString("Category",mCategory);
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
 
+                    //bundle登録
                     detailFragment.setArguments(detailBundle);
                     mResultFragment.setArguments(thisBundle);
 
@@ -138,23 +141,55 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
                     FragmentTransaction transaction = fragmentManager.beginTransaction();
                     transaction.replace(R.id.container, detailFragment);
 
-                    //戻るボタン挙動
+                    //戻るボタン挙動設定
                     transaction.addToBackStack(null);
                     transaction.commit();
                 }
             }
         });
-
-
-
-
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        //検索パラメータ保存
         outState.putString("Range",mRange);
         outState.putInt("PageCount",mPageCount);
+        outState.putString("FreeWord",mFreeWord);
+        outState.putString("Category",mCategory);
+    }
+
+
+    //GPSを使った検索を開始
+    public void searchGo(){
+        //非同期処理担当のクラスをインスタンス化
+        GurunaviAPI gurunaviAPI = new GurunaviAPI(this);
+
+        String latitude = "35.657575";
+        String longitude = "139.702234";
+        //位置情報を取得
+        //    mLatitude = ((MainActivity)getActivity()).getLatitude();
+        //    mLongitude = ((MainActivity)getActivity()).getLongitude();
+
+        //クエリに設定するパラメータをHashMapでまとめる
+        HashMap<String,String> map = new HashMap<>();
+        map.put("url",SEARCHURL);
+        map.put("keyid",ACCESSKEY);
+        map.put("latitude",latitude);
+        map.put("longitude",longitude);
+        map.put("range",mRange);
+        map.put("offset_page",Integer.toString(mPageCount));
+
+        //カテゴリが指定されていれば
+        if(!mCategory.equals(""))
+            map.put("category_l",mCategory);
+
+        //フリーワードが入力されていれば
+        if(!mFreeWord.equals(""))
+            map.put("freeword",mFreeWord);
+
+        //処理開始
+        gurunaviAPI.search(map);
     }
 
     //リストビューのフッターを返す
@@ -175,6 +210,7 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
             mFooter.findViewById(R.id.nextButton).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //ページを進める
                     mPageCount++;
                     searchGo();
                 }
@@ -184,18 +220,20 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
             mFooter.findViewById(R.id.backButton).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    //ページを戻る
                     mPageCount--;
                     searchGo();
                 }
             });
 
-
-
+            //ページジャンプ機能を持ったSpinnerの動作を登録
             ((Spinner)mFooter.findViewById(R.id.pageIndex)).setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    //現在のページ以外が指定されたら
                     if(position != mPageCount-mOffset-1) {
-                        mPageCount = position+mOffset;
+                        //ページをジャンプ
+                        mPageCount = position+mOffset+1;
                         searchGo();
                     }
                 }
@@ -217,19 +255,22 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
     public void onResponseDataReceived(String responseData) {
         //アダプタ登録用のレストランリスト
         ArrayList<Restaurant> restaurants = new ArrayList<>();
-
+        int pageNum = 0;
         try {
             //JSONObjectで情報を取得
             mJsonObject = new JSONObject(responseData);
-            //今回ヒットした店数
-            int pageNum = mJsonObject.getInt("hit_per_page");
             //総ヒット件数
             mTotalHit = mJsonObject.getInt("total_hit_count");
+
+            JSONArray restArray = mJsonObject.getJSONArray("rest");
+
+            //今回ヒットした件数
+            pageNum = restArray.length();
             for (int i = 0; i < pageNum; i++) {
                 //Restaurantインスタンスを作成
                 Restaurant restaurant = new Restaurant();
                 //レストラン情報各種をRestaurantのメンバに登録
-                restaurant.setAll(mJsonObject.getJSONArray("rest").getJSONObject(i));
+                restaurant.setAll(restArray.getJSONObject(i));
                 //リストに追加
                 restaurants.add(restaurant);
             }
@@ -237,18 +278,17 @@ public class ResultFragment extends Fragment implements GurunaviAPI.ResponseList
             e.printStackTrace();
         }
 
-        //RestaurantAdapterのインスタンス作成
-        mAdapter = new RestaurantAdapter(this.getContext(), 0,restaurants );
-        mListView.setAdapter(mAdapter);
+        //アダプターを登録
+        mListView.setAdapter(new RestaurantAdapter(this.getContext(), 0,restaurants ));
 
 
         //ヘッダに文字列を設定
         ((TextView)mHeader.findViewById(R.id.pageAnnounce)).setText(
                 String.format(getResources().getString(R.string.pageAnnounce),
-                        mTotalHit,(10*mPageCount-9),10*mPageCount));
+                        mTotalHit,(PAGENUM*mPageCount-PAGENUM-1),PAGENUM*mPageCount-(PAGENUM-pageNum)));
 
 
-        int totalpage = (int)Math.ceil(mTotalHit/10);
+        int totalpage = (mTotalHit/PAGENUM)+1;
 
         if(totalpage <= mPageCount) {//次のページが存在するかどうか
             //存在しない場合，進むボタンを無効化
