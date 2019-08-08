@@ -14,7 +14,6 @@
     <string name="phone">電話番号</string>
     <string name="opentime">営業時間</string>
     <string name="nodataAccess">アクセス情報なし</string>
-    <string name="URL">URL</string>
     <string name="pagenum2">件を表示中</string>
     <string name="pageAnnounce">%d件中 %d～%d件を表示中</string>
     <string name="app_name_jp">レストラン検索アプリ</string>

@@ -12,7 +12,7 @@ import java.net.URL;
 
 public class ImageGetTask extends AsyncTask<String,Void,Bitmap[]> {
 
-    OnImageResponseListener mListener;
+    private OnImageResponseListener mListener;
 
     interface OnImageResponseListener{
         void onImageDataReceived(Bitmap[] bitmap);
@@ -30,7 +30,7 @@ public class ImageGetTask extends AsyncTask<String,Void,Bitmap[]> {
         Bitmap[] result = new Bitmap[urls.length];
         try {
             for(int i=0;i<urls.length;i++) {
-                if(urls[i].equals("")){
+                if(urls[i]==null||urls[i].equals("")){
                     result[i] = null;
                     continue;
                 }

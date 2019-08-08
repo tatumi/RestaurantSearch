@@ -8,8 +8,7 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,20 +19,16 @@
                 android:id="@+id/nameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                style="@style/DefaultFont.Title"
                 android:padding="10dp"
-                android:text="@string/loading"
-                android:textSize="24sp" />
+                android:text="NAME" />
 
             <TextView
                 android:id="@+id/prTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:paddingBottom="10dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:text="@string/loading"
+                style="@style/DefaultFont"
+                android:text="PR"
                 android:textSize="18sp" />
 
             <RelativeLayout
@@ -47,42 +42,78 @@
                     android:layout_height="375px"
                     android:padding="10dp"
                     android:adjustViewBounds="true"
-                    android:contentDescription="@string/loading"
                     android:scaleType="fitXY"
                     app:srcCompat="@drawable/noimage" />
+
+                <TextView
+                    android:id="@+id/category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@id/shopImage"
+                    android:paddingLeft="5dp"
+                    android:text="店舗の種類" />
 
                 <TextView
                     android:id="@+id/categoryTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
+                    android:layout_below="@id/category"
                     android:layout_toEndOf="@id/shopImage"
-                    android:padding="10dp"
-                    android:text="@string/loading" />
+                    android:text="CATEGORY"
+                    style="@style/DefaultFont"
+                    android:padding="5dp" />
+
+                <TextView
+                    android:id="@+id/category_l"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/categoryTextView"
+                    android:layout_toEndOf="@id/shopImage"
+                    android:paddingTop="5dp"
+                    android:paddingLeft="5dp"
+                    android:text="カテゴリ" />
+
+                <TextView
+                    android:id="@+id/category_lTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/category_l"
+                    android:layout_toEndOf="@id/shopImage"
+                    style="@style/DefaultFont"
+                    android:padding="5dp"
+                    android:text="CATEGORY_L"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
 
                 <TextView
                     android:id="@+id/address"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/shopImage"
                     android:layout_alignRight="@id/phoneNumber"
+                    style="@style/DefaultFont"
                     android:padding="5dp"
                     android:text="@string/address"
                     android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/addressTextView"
-                    android:layout_width="match_parent"
+                    style="@style/DefaultFont"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/shopImage"
                     android:layout_toRightOf="@id/phoneNumber"
                     android:padding="5dp"
-                    android:text="@string/loading"
-                    android:textSize="18sp" />
+                    android:textSize="18sp"
+                    android:text="ADDRESS"/>
 
                 <TextView
                     android:id="@+id/phoneNumber"
-                    android:layout_width="85dp"
+                    style="@style/DefaultFont"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/addressTextView"
                     android:padding="5dp"
@@ -95,69 +126,96 @@
                     android:layout_height="wrap_content"
                     android:layout_toRightOf="@id/phoneNumber"
                     android:layout_below="@id/addressTextView"
+                    style="@style/DefaultFont"
                     android:padding="5dp"
-                    android:text="@string/loading"
-                    android:textSize="18sp" />
-
-                <ImageView
-                    android:id="@+id/phoneImage"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:layout_alignParentRight="true"
-                    app:srcCompat="@drawable/phone" />
+                    android:textSize="18sp"
+                    android:text="PHONENUMBER"/>
 
                 <TextView
-                    android:id="@+id/website"
-                    android:layout_width="match_parent"
+                    android:id="@+id/openTime"
+                    style="@style/DefaultFont"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="5dp"
-                    android:layout_below="@id/phoneNumber"
                     android:layout_alignRight="@id/phoneNumber"
-                    android:text="@string/URL"
+                    android:layout_below="@id/phoneNumber"
+                    android:padding="5dp"
+                    android:text="@string/opentime"
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/URLTextView"
-                    android:layout_width="300dp"
+                    android:id="@+id/openTimeTextView"
+                    style="@style/DefaultFont"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="5dp"
-                    android:layout_toRightOf="@id/website"
                     android:layout_below="@id/phoneTextView"
+                    android:layout_toRightOf="@id/phoneNumber"
+                    android:padding="5dp"
+                    android:text="OPENTIME"
                     android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/holiday"
+                    style="@style/DefaultFont"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignRight="@id/phoneNumber"
+                    android:layout_below="@id/openTimeTextView"
+                    android:padding="5dp"
+                    android:text="休業日"
+                    android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/holidayTextView"
+                    style="@style/DefaultFont"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/openTimeTextView"
+                    android:layout_toRightOf="@id/phoneNumber"
+                    android:padding="5dp"
+                    android:text="HOLIDAY"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@id/holidayTextView"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/GoBrowseButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawableLeft="@drawable/website"
+                        style="@style/DefaultButton"
+                        android:text="Webで見る" />
+
+                    <Button
+                        android:id="@+id/CallButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawableLeft="@drawable/phone"
+                        style="@style/DefaultButton"
+                        android:text="TEL" />
+
+                    <Button
+                        android:id="@+id/NavigationButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:drawableLeft="@drawable/map"
+                        style="@style/DefaultButton"
+                        android:text="道案内" />
+
+
+                </LinearLayout>
 
             </RelativeLayout>
 
-            <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-
-                    </RelativeLayout>
-
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                </TableRow>
-            </TableLayout>
-
         </LinearLayout>
     </ScrollView>
+
+
 
 </LinearLayout>

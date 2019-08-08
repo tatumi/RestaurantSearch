@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             fragmentManager.executePendingTransactions(); // FragmentのTransaction処理の完了同期待ち
         }
 
+        //位置情報利用の許可を得ているか確認
         checkPermission();
 
 
@@ -64,19 +65,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
         }else {
+            //許可があれば測位の準備
             initLocationManager();
         }
     }
 
+    //許可取得の結果
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 101) {
             // 使用が許可された
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                //測位の準備
                 initLocationManager();
-            }else{
+            }else{//許可されなかった
+                //許可を求めるトーストを表示してアプリを終了
                 Toast toast = Toast.makeText(this,"位置情報利用の許可をお願いします",Toast.LENGTH_SHORT);
                 toast.show();
                 this.finish();
@@ -131,9 +135,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         mLatitude = Double.toString(location.getLatitude());
         mLongitude = Double.toString(location.getLongitude());
 
+        /*
         Log.d("DEBUG", "called onLocationChanged");
         Log.d("DEBUG", "lat : " + location.getLatitude());
         Log.d("DEBUG", "lon : " + location.getLongitude());
+        */
     }
 
     @Override

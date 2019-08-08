@@ -10,6 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        style="@style/DefaultButton"
         android:text="@string/back_button" />
 
     <Spinner
@@ -23,5 +24,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        style="@style/DefaultButton"
         android:text="@string/next_button" />
 </LinearLayout>

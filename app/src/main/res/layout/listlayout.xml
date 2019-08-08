@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/gray_bottom"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -10,6 +11,8 @@
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/DefaultFont"
+        android:textColor="@color/COLOR_BLUE"
         android:textSize="21sp" />
 
     <LinearLayout
@@ -31,11 +34,19 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/accessTextView"
+                android:id="@+id/categoryListText"
+                style="@style/DefaultFont"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/loading"
-                android:textSize="18sp" />
+                android:text="CATEGORY" />
+
+            <TextView
+                android:id="@+id/accessListText"
+                style="@style/DefaultFont"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ACCESS" />
+
         </LinearLayout>
 
     </LinearLayout>
